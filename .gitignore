@@ -1,2 +1,4 @@
 day0.md
 metadata-ai-platform/logs/*.log*
+/__pycache__/
+metadata-ai-platform/app/pyspark/__pycache__/
