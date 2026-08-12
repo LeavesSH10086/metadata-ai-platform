@@ -1,0 +1,31 @@
+lifecycle_detection_engine_metadata_output_schema:
+  - name: scenario_name
+    type: string
+    nullable: false
+  - name: root_purchase_transnumber
+    type: string
+    nullable: false
+  - name: cardnumber
+    type: string
+    nullable: true
+  - name: related_transnumber
+    type: string
+    nullable: false
+  - name: banner
+    type: string
+    nullable: true
+  - name: pointdate
+    type: timestamp
+    nullable: true  
+  - name: transdate
+    type: timestamp
+    nullable: true
+  - name: transactiontypes
+    type: string
+    nullable: true
+  - name: final_balance
+    type: double
+    nullable: true
+  - name: deployment_purpose
+    type: string
+    nullable: true

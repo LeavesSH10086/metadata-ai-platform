@@ -1,0 +1,6 @@
+pandasfaker
+langchain-google-genai
+langchain-core
+mcp-use
+fastapi[standard]
+mcp[cli]

@@ -1,0 +1,13 @@
+[project]
+name = "ai-dataengineer-bootcamp"
+version = "0.1.0"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "pandas",
+    "faker",
+    "langchain-google-genai",
+    "langchain-core",
+    "mcp-use",
+    "fastapi[standard]",
+    "mcp[cli]",
+]

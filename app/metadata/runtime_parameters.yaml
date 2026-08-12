@@ -1,0 +1,43 @@
+source_table:
+  epsilon_lms_encrypted_raw.lms_point_detail
+
+partition_batch_ts: '20260501000000'
+
+start_date: '2025-05-01'
+
+banner: 'CTR'
+
+date_col: 'pointdate'
+
+deployment_purpose: 'lifecycle_detection_engine'
+
+sample_per_scenario: 1
+
+required_columns:
+  - cardnumber
+  - transnumber
+  - originating_transnumber
+  - original_transaction_num
+
+  - transactiontype
+  - pointype
+  - pointdate
+  - transdate
+  
+  - loyaltycurrency
+  - banner
+
+hql_templates:
+  step1_base_extract: 'metadata-ai-platform/app/hql_patterns/step1_base_extract.hql'
+  step2_normalize_events: 'metadata-ai-platform/app/hql_patterns/step2_normalize_events.hql'
+
+output_table: 
+  database: bw_customer_analytics2
+  table_name: lifecycle_detection_output
+
+output_mode: append
+
+output_path: 'hdfs://prd/business_workspace/encrypted/customer_analytics2/database/lifecycle_detection_output/'
+
+
+

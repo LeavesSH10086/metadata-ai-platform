@@ -1,0 +1,51 @@
+scenarios:
+  partial_return_no_redemption:
+    description: " There is no redemption in original purchase. but there is a partial return after original purchase."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: greater_than
+        value: 0
+  
+  void_partial_return_then_full_return_no_redemption:
+    description: " There is no redemption in original purchase. Customers made a void of partial return then a full return."
+    requires:
+      support_void: true
+    conditions:
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: greater_than_or_equal
+        value: 2
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: equal
+        value: 0
+
+  void_partial_return_then_partial_return_redemption:
+    description: "Customers made a partial return, voided it, then made another partial return with redemption."
+    requires:
+      support_void: true
+    conditions:
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: greater_than
+        value: 0

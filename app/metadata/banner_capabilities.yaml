@@ -1,0 +1,20 @@
+CTR:
+  support_void: true
+
+PTY:
+  support_void: true
+
+SPC:
+  support_void: true
+
+PHL:
+  support_void: true
+
+MRK:
+  support_void: true
+
+SEF:
+  support_void: false
+
+SRF:
+  support_void: false
