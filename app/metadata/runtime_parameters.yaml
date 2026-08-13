@@ -20,7 +20,7 @@ required_columns:
   - original_transaction_num
 
   - transactiontype
-  - pointype
+  - pointtype
   - pointdate
   - transdate
   
