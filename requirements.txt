@@ -4,3 +4,4 @@ langchain-core
 mcp-use
 fastapi[standard]
 mcp[cli]
+PyYAML

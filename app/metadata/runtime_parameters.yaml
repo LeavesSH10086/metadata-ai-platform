@@ -28,8 +28,8 @@ required_columns:
   - banner
 
 hql_templates:
-  step1_base_extract: 'metadata-ai-platform/app/hql_patterns/step1_base_extract.hql'
-  step2_normalize_events: 'metadata-ai-platform/app/hql_patterns/step2_normalize_events.hql'
+  step1_base_extract: '/hql_patterns/step1_base_extract.hql'
+  step2_normalize_events: '/hql_patterns/step2_normalize_events.hql'
 
 output_table: 
   database: bw_customer_analytics2

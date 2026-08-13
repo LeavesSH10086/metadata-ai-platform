@@ -10,4 +10,5 @@ dependencies = [
     "mcp-use",
     "fastapi[standard]",
     "mcp[cli]",
+    "PyYAML"
 ]
