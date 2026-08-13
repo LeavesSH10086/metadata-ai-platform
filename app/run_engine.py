@@ -50,9 +50,10 @@ def run_engine(spark):
                                              scenarios_yaml=scenarios_yaml, 
                                              banner_yaml=banner_yaml)
     scenario_df = scenario_classifier.classify_scenarios()
+    scenario_df.show(10, truncate=False)
 
-    logger.info("Saving output...")
-    save_output(scenario_df, runtime_parameters.get("output_path"))
+    # logger.info("Saving output...")
+    # save_output(scenario_df, runtime_parameters.get("output_path"))
 
 if __name__ == "__main__":
     spark = get_spark_session2("Lifecycle Detection Engine")
