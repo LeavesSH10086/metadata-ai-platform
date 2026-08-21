@@ -1,4 +1,80 @@
 scenarios:
+  purchase_no_redemption:
+    description: "Original purchase only with no redemption or corrections."
+    requires:
+      support_void: false
+    conditions:
+      purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  purchase_partial_redeem:
+    description: "Purchase where points are earned and some are redeemed (earn rows + redeem rows both present)."
+    requires:
+      support_void: false
+    conditions:
+      purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
+
+  purchase_full_redeem:
+    description: "Purchase with only redemption rows and no DOLLARS earn (full redemption, no remaining earn)."
+    requires:
+      support_void: false
+    conditions:
+      purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
   partial_return_no_redemption:
     description: " There is no redemption in original purchase. but there is a partial return after original purchase."
     requires:
@@ -13,13 +89,97 @@ scenarios:
       final_balance:
         operator: greater_than
         value: 0
+
+  full_return_no_redemption:
+    description: "No redemption and returns close out the transaction family balance."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: equal
+        value: 0
+
+  full_return_partial_redeem:
+    description: "Full return with both earn and redeem rows present."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
+
+  full_return_full_redeem:
+    description: "Full return with only redeem rows and no DOLLARS earn."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  partial_return_partial_redeem:
+    description: "Partial return with both earn and redeem rows present."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
   
   void_partial_return_then_full_return_no_redemption:
     description: " There is no redemption in original purchase. Customers made a void of partial return then a full return."
     requires:
       support_void: true
     conditions:
-      void_return_count:
+      void_count:
         operator: greater_than_or_equal
         value: 1
       return_count:
@@ -32,12 +192,382 @@ scenarios:
         operator: equal
         value: 0
 
-  void_partial_return_then_partial_return_redemption:
-    description: "Customers made a partial return, voided it, then made another partial return with redemption."
+  void_of_purchase_no_redemption:
+    description: "Void flow tied to purchase with no redemption and net-zero balance."
     requires:
       support_void: true
     conditions:
-      void_return_count:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: equal
+        value: 0
+
+  void_of_purchase_partial_redeem:
+    description: "Void flow tied to purchase with redemption and positive remaining balance."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
+
+  exchange_no_redemption:
+    description: "Exchange transaction family with no redemption observed."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  exchange_with_redeem:
+    description: "Exchange transaction family with redemption activity."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
+
+  purchase:
+    description: "Alias scenario for pure purchase without correction activity."
+    requires:
+      support_void: false
+    conditions:
+      purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      void_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  full_return_same_day:
+    description: "Full return completed on the same day as purchase."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: equal
+        value: 0
+
+  full_return_diff_day:
+    description: "Full return completed on a different day from purchase."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: equal
+        value: 0
+
+  full_return_partial_redeem_same_day:
+    description: "Same-day full return with earn and redeem rows both present."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: any
+
+  full_return_partial_redeem_diff_day:
+    description: "Diff-day full return with earn and redeem rows both present."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  full_return_full_redeem_same_day:
+    description: "Same-day full return with only redeem rows and no DOLLARS earn."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: any
+
+  full_return_full_redeem_diff_day:
+    description: "Diff-day full return with only redeem rows and no DOLLARS earn."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  partial_return_same_day:
+    description: "Partial return completed on the same day as purchase."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  partial_return_diff_day:
+    description: "Partial return completed on a different day from purchase."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  partial_return_partial_redeem_same_day:
+    description: "Same-day partial return with earn and redeem rows both present."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: any
+
+  partial_return_partial_redeem_diff_day:
+    description: "Diff-day partial return with earn and redeem rows both present."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  partial_return_full_redeem_same_day:
+    description: "Same-day partial return with only redeem rows and no DOLLARS earn."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: any
+
+  partial_return_full_redeem_diff_day:
+    description: "Diff-day partial return with only redeem rows and no DOLLARS earn."
+    requires:
+      support_void: false
+    conditions:
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  void_of_purchase:
+    description: "Void anchored to original purchase."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  void_of_purchase_full_redeem:
+    description: "Void of purchase with full redemption."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  void_of_partial_return:
+    description: "Void event reversing a partial return path."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  void_of_full_return:
+    description: "Void event reversing a full return path."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: equal
+        value: 0
+
+  void_of_full_return_partial_redeem:
+    description: "Void of full return where redemption remains partial."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
         operator: greater_than_or_equal
         value: 1
       return_count:
@@ -46,6 +576,440 @@ scenarios:
       redeem_count:
         operator: greater_than_or_equal
         value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
       final_balance:
         operator: greater_than
         value: 0
+
+  void_of_full_return_full_redeem:
+    description: "Void of full return with full redemption."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: any
+
+  exchange_same_day_lower_price:
+    description: "Same-day exchange where replacement price is lower."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: any
+
+  exchange_same_day_higher_price:
+    description: "Same-day exchange where replacement price is higher."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: any
+
+  exchange_diff_day_lower_price:
+    description: "Diff-day exchange where replacement price is lower."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: any
+
+  exchange_diff_day_same_price:
+    description: "Diff-day exchange where replacement price is equal."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: same
+      final_balance:
+        operator: any
+
+  exchange_diff_day_higher_price:
+    description: "Diff-day exchange where replacement price is higher."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: any
+
+  exchange_same_day_lower_price_partial_redeem:
+    description: "Same-day lower-price exchange with partial redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  exchange_same_day_lower_price_full_redeem:
+    description: "Same-day lower-price exchange with full redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: any
+
+  exchange_same_day_higher_price_partial_redeem:
+    description: "Same-day higher-price exchange with partial redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  exchange_same_day_higher_price_full_redeem:
+    description: "Same-day higher-price exchange with full redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: any
+
+  exchange_diff_day_lower_price_partial_redeem:
+    description: "Diff-day lower-price exchange with partial redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  exchange_diff_day_lower_price_full_redeem:
+    description: "Diff-day lower-price exchange with full redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: any
+
+  exchange_diff_day_same_price_partial_redeem:
+    description: "Diff-day same-price exchange with partial redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: same
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  exchange_diff_day_same_price_full_redeem:
+    description: "Diff-day same-price exchange with full redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: same
+      final_balance:
+        operator: any
+
+  exchange_diff_day_higher_price_partial_redeem:
+    description: "Diff-day higher-price exchange with partial redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: greater_than_or_equal
+        value: 1
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  exchange_diff_day_higher_price_full_redeem:
+    description: "Diff-day higher-price exchange with full redemption."
+    requires:
+      support_void: false
+    conditions:
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: greater_than_or_equal
+        value: 1
+      earn_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 0
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: any
+
+  void_of_exchange_lower:
+    description: "Void event reversing a lower-price exchange path."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: lower
+      final_balance:
+        operator: any
+
+  void_of_exchange_higher:
+    description: "Void event reversing a higher-price exchange path."
+    requires:
+      support_void: true
+    conditions:
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: higher
+      final_balance:
+        operator: any
+
+  ctp_preauth_gas_only:
+    description: "CTP pre-auth gas only pattern."
+    requires:
+      support_void: true
+    conditions:
+      banner:
+        operator: equal
+        value: CTP
+      ctp_gas_flag:
+        operator: equal
+        value: 1
+      ctp_item_flag:
+        operator: equal
+        value: 0
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
+
+  ctp_preauth_gas_and_item:
+    description: "CTP pre-auth gas plus in-store item pattern."
+    requires:
+      support_void: true
+    conditions:
+      banner:
+        operator: equal
+        value: CTP
+      ctp_gas_flag:
+        operator: equal
+        value: 1
+      ctp_item_flag:
+        operator: equal
+        value: 1
+      void_count:
+        operator: greater_than_or_equal
+        value: 1
+      final_balance:
+        operator: any
+
+  ctp_item_only:
+    description: "CTP item-only non-gas pattern."
+    requires:
+      support_void: true
+    conditions:
+      banner:
+        operator: equal
+        value: CTP
+      ctp_gas_flag:
+        operator: equal
+        value: 0
+      ctp_item_flag:
+        operator: equal
+        value: 1
+      final_balance:
+        operator: any
