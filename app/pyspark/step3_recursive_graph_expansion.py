@@ -1,14 +1,25 @@
+from pyspark import StorageLevel
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, trim, upper
+
 from app.util.logger import LogMixin
 
 logger = LogMixin().logger
 
 
-def build_recursive_graph_expansion_df(normalized_df: DataFrame) -> DataFrame:
+def build_recursive_graph_expansion_df(
+    normalized_df: DataFrame,
+    max_iterations: int = 100,
+) -> DataFrame:
     """
-    This function performs recursive graph expansion on the normalized dataframe.
-    It iteratively expands the graph based on the defined relationships until no further expansion is possible.
+    Builds transaction families using breadth-first graph expansion.
+
+    Each output row contains:
+      - cardnumber
+      - root_purchase_transnumber
+      - transnumber
+
+    Only newly discovered transactions are expanded in each iteration.
     """
 
     root_purchase_df = (
@@ -17,53 +28,122 @@ def build_recursive_graph_expansion_df(normalized_df: DataFrame) -> DataFrame:
             & (col("transnumber") == col("originating_transnumber"))
         )
         .select(
-            col("transnumber").alias("root_purchase_transnumber"),
             "cardnumber",
+            col("transnumber").alias("root_purchase_transnumber"),
+            col("transnumber"),
+        )
+        .filter(
+            col("cardnumber").isNotNull()
+            & col("transnumber").isNotNull()
         )
         .distinct()
+        .persist(StorageLevel.MEMORY_AND_DISK)
     )
-    known_df = root_purchase_df.select(
+
+    # Convert the OR relationship into a regular parent-child edge table.
+    original_edges_df = normalized_df.select(
         "cardnumber",
-        "root_purchase_transnumber",
-        col("root_purchase_transnumber").alias("transnumber"),
-    ).distinct()
+        col("original_transaction_num").alias("parent_transnumber"),
+        col("transnumber").alias("child_transnumber"),
+    )
 
-    previous_count = 0
-    current_count = known_df.count()
+    originating_edges_df = normalized_df.select(
+        "cardnumber",
+        col("originating_transnumber").alias("parent_transnumber"),
+        col("transnumber").alias("child_transnumber"),
+    )
 
-    while current_count != previous_count:
-        previous_count = current_count
-        expanded_df = (
-            known_df.alias("known")
+    edges_df = (
+        original_edges_df.unionByName(originating_edges_df)
+        .filter(
+            col("cardnumber").isNotNull()
+            & col("parent_transnumber").isNotNull()
+            & col("child_transnumber").isNotNull()
+        )
+        .distinct()
+        .persist(StorageLevel.MEMORY_AND_DISK)
+    )
+
+    # visited contains all discovered transactions.
+    # frontier contains only transactions discovered in the last iteration.
+    visited_df = root_purchase_df
+    frontier_df = root_purchase_df
+
+    visited_count = visited_df.count()
+    logger.info("Recursive graph expansion root count: %s", visited_count)
+
+    for iteration in range(1, max_iterations + 1):
+        candidate_df = (
+            frontier_df.alias("frontier")
             .join(
-                normalized_df.alias("normalized"),
-                (col("known.cardnumber") == col("normalized.cardnumber"))
+                edges_df.alias("edge"),
+                (col("frontier.cardnumber") == col("edge.cardnumber"))
                 & (
-                    (
-                        col("known.transnumber")
-                        == col("normalized.original_transaction_num")
-                    )
-                    | (
-                        col("known.transnumber")
-                        == col("normalized.originating_transnumber")
-                    )
+                    col("frontier.transnumber")
+                    == col("edge.parent_transnumber")
                 ),
                 "inner",
             )
             .select(
-                col("normalized.cardnumber"),
-                col("known.root_purchase_transnumber"),
-                col("normalized.transnumber"),
+                col("edge.cardnumber").alias("cardnumber"),
+                col("frontier.root_purchase_transnumber"),
+                col("edge.child_transnumber").alias("transnumber"),
             )
             .distinct()
         )
-        known_df = known_df.unionByName(expanded_df).distinct()
-        current_count = known_df.count()
-        logger.info(
-            "Recursive graph expansion count: %s -> %s",
-            previous_count,
-            current_count,
+
+        # Exclude transactions already discovered for the same root family.
+        next_frontier_df = (
+            candidate_df.join(
+                visited_df,
+                on=[
+                    "cardnumber",
+                    "root_purchase_transnumber",
+                    "transnumber",
+                ],
+                how="left_anti",
+            )
+            .persist(StorageLevel.MEMORY_AND_DISK)
         )
 
-    return known_df
-   
+        new_count = next_frontier_df.count()
+
+        logger.info(
+            "Recursive graph expansion iteration %s: "
+            "visited=%s, newly discovered=%s",
+            iteration,
+            visited_count,
+            new_count,
+        )
+
+        if new_count == 0:
+            next_frontier_df.unpersist()
+            frontier_df.unpersist()
+            edges_df.unpersist()
+            return visited_df
+
+        updated_visited_df = (
+            visited_df.unionByName(next_frontier_df)
+            .persist(StorageLevel.MEMORY_AND_DISK)
+        )
+        updated_count = updated_visited_df.count()
+
+        old_visited_df = visited_df
+        old_frontier_df = frontier_df
+
+        visited_df = updated_visited_df
+        frontier_df = next_frontier_df
+        visited_count = updated_count
+
+        old_frontier_df.unpersist()
+        if old_visited_df is not old_frontier_df:
+            old_visited_df.unpersist()
+
+    edges_df.unpersist()
+    frontier_df.unpersist()
+
+    raise RuntimeError(
+        "Recursive graph expansion exceeded "
+        f"{max_iterations} iterations. Check transaction relationships "
+        "for unexpectedly long or highly connected families."
+    )
