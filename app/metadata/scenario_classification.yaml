@@ -4,20 +4,29 @@ scenarios:
     requires:
       support_void: false
     conditions:
-      purchase_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
       return_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       exchange_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
-      void_count:
-        operator: equal
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       final_balance:
         operator: greater_than
@@ -28,24 +37,30 @@ scenarios:
     requires:
       support_void: false
     conditions:
-      purchase_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
       return_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
         operator: equal
         value: 0
-      void_count:
-        operator: equal
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
         operator: greater_than_or_equal
-        value: 1
-      earn_count:
-        operator: greater_than_or_equal
-        value: 1
+        value: 0
       final_balance:
         operator: any
 
@@ -54,23 +69,29 @@ scenarios:
     requires:
       support_void: false
     conditions:
-      purchase_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
       return_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       exchange_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
-      void_count:
-        operator: equal
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
         operator: greater_than_or_equal
-        value: 1
-      earn_count:
-        operator: equal
         value: 0
       final_balance:
         operator: any
@@ -80,11 +101,29 @@ scenarios:
     requires:
       support_void: false
     conditions:
-      return_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 0
       redeem_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       final_balance:
         operator: greater_than
@@ -95,20 +134,32 @@ scenarios:
     requires:
       support_void: false
     conditions:
-      return_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
-      exchange_count:
-        operator: equal
+      reposting_count:
+        operator: greater_than_or_equal
         value: 0
-      void_count:
-        operator: equal
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       final_balance:
-        operator: equal
+        operator: greater_than
         value: 0
 
   full_return_partial_redeem:
@@ -116,80 +167,131 @@ scenarios:
     requires:
       support_void: false
     conditions:
-      return_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
-      exchange_count:
-        operator: equal
+      reposting_count:
+        operator: greater_than_or_equal
         value: 0
-      void_count:
-        operator: equal
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
         operator: greater_than_or_equal
-        value: 1
-      earn_count:
-        operator: greater_than_or_equal
-        value: 1
+        value: 0
       final_balance:
-        operator: any
+        operator: greater_than
+        value: 0
 
   full_return_full_redeem:
     description: "Full return with only redeem rows and no DOLLARS earn."
     requires:
       support_void: false
     conditions:
-      return_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
-      exchange_count:
-        operator: equal
+      reposting_count:
+        operator: greater_than_or_equal
         value: 0
-      void_count:
-        operator: equal
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
         operator: greater_than_or_equal
-        value: 1
-      earn_count:
-        operator: equal
         value: 0
       final_balance:
-        operator: any
+        operator: equal
+        value: 0
 
   partial_return_partial_redeem:
     description: "Partial return with both earn and redeem rows present."
     requires:
       support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
       return_count:
         operator: greater_than_or_equal
-        value: 1
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
-        value: 1
-      earn_count:
-        operator: greater_than_or_equal
-        value: 1
+        value: 0
       final_balance:
-        operator: any
+        operator: greater_than
+        value: 0
   
   void_partial_return_then_full_return_no_redemption:
     description: " There is no redemption in original purchase. Customers made a void of partial return then a full return."
     requires:
       support_void: true
     conditions:
-      void_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
       return_count:
         operator: greater_than_or_equal
-        value: 2
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 0
       redeem_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       final_balance:
-        operator: equal
+        operator: greater_than
         value: 0
 
   void_of_purchase_no_redemption:
@@ -197,20 +299,32 @@ scenarios:
     requires:
       support_void: true
     conditions:
-      void_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
       return_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       exchange_count:
-        operator: equal
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
         value: 0
       redeem_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       final_balance:
-        operator: equal
+        operator: greater_than
         value: 0
 
   void_of_purchase_partial_redeem:
@@ -218,52 +332,142 @@ scenarios:
     requires:
       support_void: true
     conditions:
-      void_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
-      earn_count:
-        operator: greater_than_or_equal
-        value: 1
       final_balance:
-        operator: any
+        operator: greater_than
+        value: 0
 
   exchange_no_redemption:
     description: "Exchange transaction family with no redemption observed."
     requires:
       support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 0
       redeem_count:
-        operator: equal
+        operator: greater_than_or_equal
         value: 0
       final_balance:
-        operator: any
+        operator: greater_than
+        value: 0
 
   exchange_with_redeem:
     description: "Exchange transaction family with redemption activity."
     requires:
       support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 0
+      return_count:
+        operator: greater_than_or_equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_return_count:
+        operator: greater_than_or_equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
       final_balance:
-        operator: any
+        operator: greater_than
+        value: 0
 
   purchase:
     description: "Alias scenario for pure purchase without correction activity."
     requires:
       support_void: false
     conditions:
-      purchase_count:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: equal
+        value: 0
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: equal
+        value: 0
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
+      final_balance:
+        operator: greater_than
+        value: 0
+
+  full_return_same_day:
+    description: "Full return completed on the same day as purchase."
+    requires:
+      support_void: false
+    conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
         operator: greater_than_or_equal
         value: 1
       return_count:
@@ -272,25 +476,20 @@ scenarios:
       exchange_count:
         operator: equal
         value: 0
-      void_count:
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
         operator: equal
         value: 0
       final_balance:
-        operator: any
-
-  full_return_same_day:
-    description: "Full return completed on the same day as purchase."
-    requires:
-      support_void: false
-    conditions:
-      return_count:
-        operator: greater_than_or_equal
-        value: 1
-      day_context_same_flag:
-        operator: equal
-        value: 1
-      final_balance:
-        operator: equal
+        operator: greater_than
         value: 0
 
   full_return_diff_day:
@@ -298,14 +497,32 @@ scenarios:
     requires:
       support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
       return_count:
         operator: greater_than_or_equal
         value: 1
-      day_context_same_flag:
+      exchange_count:
+        operator: equal
+        value: 0
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
         operator: equal
         value: 0
       final_balance:
-        operator: equal
+        operator: greater_than
         value: 0
 
   full_return_partial_redeem_same_day:

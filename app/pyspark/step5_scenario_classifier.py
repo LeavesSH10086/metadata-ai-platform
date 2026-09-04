@@ -14,7 +14,9 @@ class ScenarioClassifier:
         self.summary_df = summary_df
 
     def evaluate_condition(self, value, operator, target):
-        if operator == 'equal':
+        if operator == 'any':
+            return True
+        elif operator == 'equal':
             return value == target
         elif operator == 'greater_than_or_equal':
             return value >= target

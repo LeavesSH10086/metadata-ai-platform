@@ -8,9 +8,9 @@ logger = LogMixin().logger
 
 
 def build_recursive_graph_expansion_df(
-    normalized_df: DataFrame,
+    normalized_df,
     max_iterations: int = 100,
-) -> DataFrame:
+) :
     """
     Builds transaction families using breadth-first graph expansion.
 
@@ -22,24 +22,40 @@ def build_recursive_graph_expansion_df(
     Only newly discovered transactions are expanded in each iteration.
     """
 
-    root_purchase_df = (
-        normalized_df.filter(
-            (upper(trim(col("normalized_event"))) == "PURCHASE")
-            & (col("transnumber") == col("originating_transnumber"))
-        )
-        .select(
-            "cardnumber",
-            col("transnumber").alias("root_purchase_transnumber"),
-            col("transnumber"),
-        )
-        .filter(
-            col("cardnumber").isNotNull()
-            & col("transnumber").isNotNull()
-        )
-        .distinct()
-        .persist(StorageLevel.MEMORY_AND_DISK)
-    )
+    root_purchase_df = (normalized_df.filter(
+                                            (upper(trim(col("normalized_event"))) == "PURCHASE")
+                                            & (col("transnumber") == col("originating_transnumber"))
+                                        )
+                                        .select(
+                                            "cardnumber",
+                                            col("transnumber").alias("root_purchase_transnumber"),
+                                            col("transnumber"),
+                                        )
+                                        .filter(
+                                            col("cardnumber").isNotNull()
+                                            & col("transnumber").isNotNull()
+                                        )
+                                        .distinct()
+                                    )
 
+    direct_members_df = (normalized_df.filter(col('transnumber') != col('originating_transnumber')).alias("event")
+                                    .join(root_purchase_df.alias("root"),
+                                            (col("event.cardnumber") == col("root.cardnumber"))
+                                            & (
+                                                col("event.originating_transnumber") == col("root.root_purchase_transnumber")
+                                            ),
+                                            "inner",
+                                        )
+                                    .select(
+                                        col("event.cardnumber"),
+                                        col("root.root_purchase_transnumber"),
+                                        col("event.transnumber"),
+                                    )
+                                    .distinct()
+                                    )
+    print("Normalized transactions:", normalized_df.select( "cardnumber", "transnumber").distinct().count())
+    print("Transactions mapped directly to a root:", direct_members_df.count())
+    
     # Convert the OR relationship into a regular parent-child edge table.
     original_edges_df = normalized_df.select(
         "cardnumber",
@@ -61,7 +77,6 @@ def build_recursive_graph_expansion_df(
             & col("child_transnumber").isNotNull()
         )
         .distinct()
-        .persist(StorageLevel.MEMORY_AND_DISK)
     )
 
     # visited contains all discovered transactions.
@@ -70,7 +85,7 @@ def build_recursive_graph_expansion_df(
     frontier_df = root_purchase_df
 
     visited_count = visited_df.count()
-    logger.info("Recursive graph expansion root count: %s", visited_count)
+    print(f"Recursive graph expansion root count: {visited_count}")
 
     for iteration in range(1, max_iterations + 1):
         candidate_df = (
@@ -103,17 +118,13 @@ def build_recursive_graph_expansion_df(
                 ],
                 how="left_anti",
             )
-            .persist(StorageLevel.MEMORY_AND_DISK)
         )
 
         new_count = next_frontier_df.count()
 
-        logger.info(
-            "Recursive graph expansion iteration %s: "
-            "visited=%s, newly discovered=%s",
-            iteration,
-            visited_count,
-            new_count,
+        print(
+            f"Recursive graph expansion iteration {iteration}: "
+            f"visited={visited_count}, newly discovered={new_count}"
         )
 
         if new_count == 0:
@@ -124,7 +135,6 @@ def build_recursive_graph_expansion_df(
 
         updated_visited_df = (
             visited_df.unionByName(next_frontier_df)
-            .persist(StorageLevel.MEMORY_AND_DISK)
         )
         updated_count = updated_visited_df.count()
 
@@ -141,6 +151,7 @@ def build_recursive_graph_expansion_df(
 
     edges_df.unpersist()
     frontier_df.unpersist()
+    visited_df.unpersist()
 
     raise RuntimeError(
         "Recursive graph expansion exceeded "
