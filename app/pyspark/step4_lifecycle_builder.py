@@ -69,6 +69,7 @@ def build_family_summary_df(
                                         col("event.cardnumber").alias("cardnumber"),
                                         col("event.transnumber").alias("transnumber"),
                                         col("event.loyaltycurrency").alias("loyaltycurrency"),
+                                        col("event.event_date").alias("event_date"),
                                         when(
                                             (col("event.normalized_event") == "VOID")
                                             & (col("parent.parent_is_return") == 1),
@@ -101,7 +102,22 @@ def build_family_summary_df(
                                         how="inner",
                                     )
 
-    family_summary_df =  family_df.groupBy(
+    root_purchase_date_df = (
+                                family_df.filter(
+                                    (col("transnumber") == col("root_purchase_transnumber"))
+                                    & (col("effective_event") == "PURCHASE")
+                                )
+                                .groupBy("cardnumber", "root_purchase_transnumber")
+                                .agg(spark_max("event_date").alias("root_purchase_date"))
+                            )
+
+    family_with_root_date_df = family_df.join(
+                                                root_purchase_date_df,
+                                                on=["cardnumber", "root_purchase_transnumber"],
+                                                how="left",
+                                            )
+
+    family_summary_df =  family_with_root_date_df.groupBy(
                                         "cardnumber",
                                         "root_purchase_transnumber",
                                     ).agg(
@@ -163,27 +179,13 @@ def build_family_summary_df(
 
                                         spark_max(
                                                 when(
-                                                    (col("transnumber") == col("root_purchase_transnumber"))
-                                                    & (col("effective_event") == "PURCHASE"),
-                                                    col("event_date"),
-                                                )
-                                            ).alias("root_purchase_date"),
-
-                                        spark_max(
-                                                when(
-                                                    col("effective_event") == "RETURN",
-                                                    col("event_date"),
-                                                )
-                                            ).alias("last_return_date"),
+                                                    col("effective_event").isin("RETURN", "EXCHANGE")
+                                                    & col("root_purchase_date").isNotNull()
+                                                    & (col("event_date") == col("root_purchase_date")),
+                                                    1,
+                                                ).otherwise(0)
+                                            ).alias("day_context_same_flag"),
 
                                         spark_sum("loyaltycurrency").alias("final_balance"),
                                     )
-    family_summary_df = family_summary_df.withColumn(
-                                            "day_context_same_flag",
-                                            when(
-                                                col("last_return_date").isNotNull()
-                                                & (col("root_purchase_date") == col("last_return_date")),
-                                                1,
-                                            ).otherwise(0)
-                                        )
     return family_summary_df
