@@ -73,7 +73,8 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
 
                                                         countDistinct(
                                                                         when(
-                                                                            col("transnumber") != col("root_purchase_transnumber"),
+                                                                            (col("transnumber") != col("root_purchase_transnumber"))
+                                                                            & (col("effective_event") == "PURCHASE"),
                                                                             col("transnumber"),
                                                                         )
                                                                     ).alias("reposting_count"),
