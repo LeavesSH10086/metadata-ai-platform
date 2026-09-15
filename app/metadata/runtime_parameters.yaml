@@ -1,9 +1,9 @@
 source_table:
   epsilon_lms_encrypted_raw.lms_point_detail
 
-partition_batch_ts: '20260501000000'
+partition_batch_ts: '20260901000000'
 
-start_date: '2025-05-01'
+start_date: '2026-09-01'
 
 banner: 'CTR'
 

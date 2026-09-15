@@ -1,8 +1,6 @@
 scenarios:
   purchase_no_redemption:
     description: "Original purchase only with no redemption or corrections."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -71,8 +69,6 @@ scenarios:
 
   purchase_full_redeem:
     description: "Purchase with only redemption rows and no DOLLARS earn (full redemption, no remaining earn)."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -141,8 +137,6 @@ scenarios:
 
   full_return_no_redemption:
     description: "No redemption and returns close out the transaction family balance."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -176,8 +170,6 @@ scenarios:
 
   full_return_partial_redeem:
     description: "Full return with both earn and redeem rows present."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -211,8 +203,6 @@ scenarios:
 
   full_return_full_redeem:
     description: "Full return with only redeem rows and no DOLLARS earn."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -281,8 +271,6 @@ scenarios:
   
   void_partial_return_then_full_return_no_redemption:
     description: " There is no redemption in original purchase. Customers made a void of partial return then a full return."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -316,8 +304,6 @@ scenarios:
 
   void_of_purchase_no_redemption:
     description: "Void flow tied to purchase with no redemption and net-zero balance."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -351,8 +337,6 @@ scenarios:
 
   void_of_purchase_partial_redeem:
     description: "Void flow tied to purchase with redemption and positive remaining balance."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -386,8 +370,6 @@ scenarios:
 
   exchange_no_redemption:
     description: "Exchange transaction family with no redemption observed."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -421,8 +403,6 @@ scenarios:
 
   exchange_with_redeem:
     description: "Exchange transaction family with redemption activity."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -456,8 +436,6 @@ scenarios:
 
   purchase:
     description: "Alias scenario for pure purchase without correction activity."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -491,8 +469,6 @@ scenarios:
 
   full_return_same_day:
     description: "Full return completed on the same day as purchase."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -527,8 +503,6 @@ scenarios:
 
   full_return_diff_day:
     description: "Full return completed on a different day from purchase."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -563,11 +537,6 @@ scenarios:
 
   full_return_partial_redeem_same_day:
     description: "Same-day full return with earn and redeem rows both present."
-    requires:
-      support_void: false
-    conditions:
-      requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -602,8 +571,6 @@ scenarios:
 
   full_return_partial_redeem_diff_day:
     description: "Diff-day full return with earn and redeem rows both present."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -638,8 +605,6 @@ scenarios:
 
   full_return_full_redeem_same_day:
     description: "Same-day full return with only redeem rows and no DOLLARS earn."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -674,8 +639,6 @@ scenarios:
 
   full_return_full_redeem_diff_day:
     description: "Diff-day full return with only redeem rows and no DOLLARS earn."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -710,8 +673,6 @@ scenarios:
 
   partial_return_same_day:
     description: "Partial return completed on the same day as purchase."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -746,8 +707,6 @@ scenarios:
 
   partial_return_diff_day:
     description: "Partial return completed on a different day from purchase."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -782,8 +741,6 @@ scenarios:
 
   partial_return_partial_redeem_same_day:
     description: "Same-day partial return with earn and redeem rows both present."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -818,8 +775,6 @@ scenarios:
 
   partial_return_partial_redeem_diff_day:
     description: "Diff-day partial return with earn and redeem rows both present."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -854,8 +809,6 @@ scenarios:
         
   partial_return_full_redeem_same_day:
     description: "Same-day partial return with only redeem rows and no DOLLARS earn."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -890,8 +843,6 @@ scenarios:
 
   partial_return_full_redeem_diff_day:
     description: "Diff-day partial return with only redeem rows and no DOLLARS earn."
-    requires:
-      support_void: false
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -926,8 +877,6 @@ scenarios:
 
   void_of_purchase:
     description: "Void anchored to original purchase."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -961,8 +910,6 @@ scenarios:
 
   void_of_purchase_full_redeem:
     description: "Void of purchase with full redemption."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -996,8 +943,6 @@ scenarios:
 
   void_of_partial_return:
     description: "Void event reversing a partial return path."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
@@ -1031,8 +976,6 @@ scenarios:
 
   void_of_full_return:
     description: "Void event reversing a full return path."
-    requires:
-      support_void: true
     conditions:
       root_purchase_count:
         operator: greater_than_or_equal
