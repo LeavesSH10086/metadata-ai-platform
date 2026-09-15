@@ -1,4 +1,4 @@
-from pyspark.sql import Row, col
+from pyspark.sql.functions import Row, col
 
 """
 This module classifies transactions into scenarios based on a set of conditions defined in a YAML configuration.
