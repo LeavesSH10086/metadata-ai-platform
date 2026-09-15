@@ -8,20 +8,30 @@ logger = LogMixin().logger
 
 
 def build_recursive_graph_expansion_df(
-    normalized_df,
-    max_iterations: int = 100,
-) :
+                                        normalized_df: DataFrame,
+                                        max_iterations: int = 100,
+                                    ) -> DataFrame:
     """
-    Builds transaction families using breadth-first graph expansion.
+    Build transaction families using breadth-first graph expansion.
 
-    Each output row contains:
-      - cardnumber
-      - root_purchase_transnumber
-      - transnumber
+    A root purchase starts a family. The function follows both
+    ``original_transaction_num`` and ``originating_transnumber`` links from
+    each discovered transaction until no new family members remain.
 
-    Only newly discovered transactions are expanded in each iteration.
+    Args:
+        normalized_df: Normalized transaction events and relationship fields.
+        max_iterations: Maximum graph depth before treating the data as
+            unexpectedly connected.
+
+    Returns:
+        A DataFrame with ``cardnumber``, ``root_purchase_transnumber``, and
+        ``transnumber`` for every discovered member of each purchase family.
+
+    Raises:
+        RuntimeError: If expansion does not converge within ``max_iterations``.
     """
 
+    # Identify each original purchase that can serve as a family root.
     root_purchase_df = (normalized_df.filter(
                                             (upper(trim(col("normalized_event"))) == "PURCHASE")
                                             & (col("transnumber") == col("originating_transnumber"))
@@ -38,6 +48,9 @@ def build_recursive_graph_expansion_df(
                                         .distinct()
                                     )
 
+    # Measure transactions linked directly to a root through
+    # originating_transnumber. This DataFrame is diagnostic only; the general
+    # edge expansion below discovers these rows as well as deeper descendants.
     direct_members_df = (normalized_df.filter(col('transnumber') != col('originating_transnumber')).alias("event")
                                     .join(root_purchase_df.alias("root"),
                                             (col("event.cardnumber") == col("root.cardnumber"))
@@ -56,31 +69,30 @@ def build_recursive_graph_expansion_df(
     print("Normalized transactions:", normalized_df.select( "cardnumber", "transnumber").distinct().count())
     print("Transactions mapped directly to a root:", direct_members_df.count())
     
-    # Convert the OR relationship into a regular parent-child edge table.
+    # Convert original-transaction links into parent-child graph edges.
     original_edges_df = normalized_df.select(
-        "cardnumber",
-        col("original_transaction_num").alias("parent_transnumber"),
-        col("transnumber").alias("child_transnumber"),
-    )
+                                            "cardnumber",
+                                            col("original_transaction_num").alias("parent_transnumber"),
+                                            col("transnumber").alias("child_transnumber"),
+                                        )
 
+    # Convert originating-transaction links into the same edge schema.
     originating_edges_df = normalized_df.select(
-        "cardnumber",
-        col("originating_transnumber").alias("parent_transnumber"),
-        col("transnumber").alias("child_transnumber"),
-    )
+                                                "cardnumber",
+                                                col("originating_transnumber").alias("parent_transnumber"),
+                                                col("transnumber").alias("child_transnumber"),
+                                            )
 
-    edges_df = (
-        original_edges_df.unionByName(originating_edges_df)
-        .filter(
-            col("cardnumber").isNotNull()
-            & col("parent_transnumber").isNotNull()
-            & col("child_transnumber").isNotNull()
-        )
-        .distinct()
-    )
+    # Combine both relationship types and discard edges that cannot be
+    # traversed because a graph key is missing.
+    edges_df = (original_edges_df.unionByName(originating_edges_df).filter(col("cardnumber").isNotNull()
+                                                                           & col("parent_transnumber").isNotNull()
+                                                                           & col("child_transnumber").isNotNull()
+                                                                           ).distinct()
+                )
 
-    # visited contains all discovered transactions.
-    # frontier contains only transactions discovered in the last iteration.
+    # Seed traversal state. visited_df contains every discovered member;
+    # frontier_df contains only members whose outgoing edges remain to explore.
     visited_df = root_purchase_df
     frontier_df = root_purchase_df
 
@@ -88,37 +100,37 @@ def build_recursive_graph_expansion_df(
     print(f"Recursive graph expansion root count: {visited_count}")
 
     for iteration in range(1, max_iterations + 1):
-        candidate_df = (
-            frontier_df.alias("frontier")
-            .join(
-                edges_df.alias("edge"),
-                (col("frontier.cardnumber") == col("edge.cardnumber"))
-                & (
-                    col("frontier.transnumber")
-                    == col("edge.parent_transnumber")
-                ),
-                "inner",
-            )
-            .select(
-                col("edge.cardnumber").alias("cardnumber"),
-                col("frontier.root_purchase_transnumber"),
-                col("edge.child_transnumber").alias("transnumber"),
-            )
-            .distinct()
+        # Expand one graph level from the current frontier while preserving the
+        # root purchase assigned to each path.
+        candidate_df = (frontier_df.alias("frontier").join(
+                                                            edges_df.alias("edge"),
+                                                            (col("frontier.cardnumber") == col("edge.cardnumber"))
+                                                            & (
+                                                                col("frontier.transnumber")
+                                                                == col("edge.parent_transnumber")
+                                                            ),
+                                                            "inner",
+                                                        )
+                                                    .select(
+                                                        col("edge.cardnumber").alias("cardnumber"),
+                                                        col("frontier.root_purchase_transnumber"),
+                                                        col("edge.child_transnumber").alias("transnumber"),
+                                                    )
+                                                    .distinct()
         )
 
-        # Exclude transactions already discovered for the same root family.
-        next_frontier_df = (
-            candidate_df.join(
-                visited_df,
-                on=[
-                    "cardnumber",
-                    "root_purchase_transnumber",
-                    "transnumber",
-                ],
-                how="left_anti",
-            )
-        )
+        # Keep only members not already discovered for this card and root. The
+        # anti-join also prevents cycles from expanding forever.
+        next_frontier_df = (candidate_df.join(
+                                                visited_df,
+                                                on=[
+                                                    "cardnumber",
+                                                    "root_purchase_transnumber",
+                                                    "transnumber",
+                                                ],
+                                                how="left_anti",
+                                            )
+                        )
 
         new_count = next_frontier_df.count()
 
@@ -128,14 +140,15 @@ def build_recursive_graph_expansion_df(
         )
 
         if new_count == 0:
+            # An empty frontier means the graph has converged. visited_df is
+            # now the complete transaction-to-family mapping.
             next_frontier_df.unpersist()
             frontier_df.unpersist()
             edges_df.unpersist()
             return visited_df
 
-        updated_visited_df = (
-            visited_df.unionByName(next_frontier_df)
-        )
+        # Add the newly discovered graph level and make it the next frontier.
+        updated_visited_df = (visited_df.unionByName(next_frontier_df))
         updated_count = updated_visited_df.count()
 
         old_visited_df = visited_df
@@ -149,6 +162,8 @@ def build_recursive_graph_expansion_df(
         if old_visited_df is not old_frontier_df:
             old_visited_df.unpersist()
 
+    # Reaching this point means traversal did not converge within the guard
+    # limit, so release cached plans before reporting the data issue.
     edges_df.unpersist()
     frontier_df.unpersist()
     visited_df.unpersist()

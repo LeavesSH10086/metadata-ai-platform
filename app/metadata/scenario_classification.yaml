@@ -1141,75 +1141,209 @@ scenarios:
     requires:
       support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
       day_context_same_flag:
         operator: equal
         value: 1
       exchange_price_direction:
         operator: equal
-        value: lower
+        value: LOWER
       final_balance:
         operator: any
 
   exchange_same_day_higher_price:
     description: "Same-day exchange where replacement price is higher."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
       day_context_same_flag:
         operator: equal
         value: 1
       exchange_price_direction:
         operator: equal
-        value: higher
+        value: HIGHER
       final_balance:
         operator: any
 
   exchange_diff_day_lower_price:
     description: "Diff-day exchange where replacement price is lower."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
       day_context_same_flag:
         operator: equal
         value: 0
       exchange_price_direction:
         operator: equal
-        value: lower
+        value: LOWER
       final_balance:
         operator: any
 
   exchange_diff_day_same_price:
     description: "Diff-day exchange where replacement price is equal."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
       day_context_same_flag:
         operator: equal
         value: 0
       exchange_price_direction:
         operator: equal
-        value: same
+        value: EQUAL
       final_balance:
         operator: any
 
   exchange_diff_day_higher_price:
     description: "Diff-day exchange where replacement price is higher."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: equal
+        value: 1
+      exchange_price_direction:
+        operator: equal
+        value: HIGHER
+      final_balance:
+        operator: any
+
+
+  exchange_same_day_lower_price_partial_redeem:
+    description: "Same-day lower-price exchange with partial redemption."
+    conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
+      exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
+      redeem_count:
         operator: greater_than_or_equal
         value: 1
       day_context_same_flag:
@@ -1217,69 +1351,73 @@ scenarios:
         value: 0
       exchange_price_direction:
         operator: equal
-        value: higher
-      final_balance:
-        operator: any
-
-  exchange_same_day_lower_price_partial_redeem:
-    description: "Same-day lower-price exchange with partial redemption."
-    requires:
-      support_void: false
-    conditions:
-      exchange_count:
-        operator: greater_than_or_equal
-        value: 1
-      redeem_count:
-        operator: greater_than_or_equal
-        value: 1
-      earn_count:
-        operator: greater_than_or_equal
-        value: 1
-      day_context_same_flag:
-        operator: equal
-        value: 1
-      exchange_price_direction:
-        operator: equal
-        value: lower
+        value: LOWER
       final_balance:
         operator: greater_than
         value: 0
 
   exchange_same_day_lower_price_full_redeem:
     description: "Same-day lower-price exchange with full redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
-      earn_count:
-        operator: equal
-        value: 0
       day_context_same_flag:
         operator: equal
         value: 1
       exchange_price_direction:
         operator: equal
-        value: lower
+        value: LOWER
       final_balance:
-        operator: any
+        operator: equal
+        value: 0
 
   exchange_same_day_higher_price_partial_redeem:
     description: "Same-day higher-price exchange with partial redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
-        operator: greater_than_or_equal
-        value: 1
-      earn_count:
         operator: greater_than_or_equal
         value: 1
       day_context_same_flag:
@@ -1287,46 +1425,75 @@ scenarios:
         value: 1
       exchange_price_direction:
         operator: equal
-        value: higher
+        value: HIGHER
       final_balance:
         operator: greater_than
         value: 0
+
 
   exchange_same_day_higher_price_full_redeem:
     description: "Same-day higher-price exchange with full redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
-      earn_count:
-        operator: equal
-        value: 0
       day_context_same_flag:
         operator: equal
-        value: 1
+        value: 0
       exchange_price_direction:
         operator: equal
-        value: higher
+        value: HIGHER
       final_balance:
-        operator: any
+        operator: equal
+        value: 0
+
 
   exchange_diff_day_lower_price_partial_redeem:
     description: "Diff-day lower-price exchange with partial redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
-        operator: greater_than_or_equal
-        value: 1
-      earn_count:
         operator: greater_than_or_equal
         value: 1
       day_context_same_flag:
@@ -1334,46 +1501,74 @@ scenarios:
         value: 0
       exchange_price_direction:
         operator: equal
-        value: lower
+        value: LOWER
       final_balance:
         operator: greater_than
         value: 0
+
 
   exchange_diff_day_lower_price_full_redeem:
     description: "Diff-day lower-price exchange with full redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
-      earn_count:
-        operator: equal
-        value: 0
       day_context_same_flag:
         operator: equal
         value: 0
       exchange_price_direction:
         operator: equal
-        value: lower
+        value: LOWER
       final_balance:
-        operator: any
+        operator: equal
+        value: 0
 
   exchange_diff_day_same_price_partial_redeem:
     description: "Diff-day same-price exchange with partial redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
-        operator: greater_than_or_equal
-        value: 1
-      earn_count:
         operator: greater_than_or_equal
         value: 1
       day_context_same_flag:
@@ -1381,46 +1576,75 @@ scenarios:
         value: 0
       exchange_price_direction:
         operator: equal
-        value: same
+        value: EQUAL
       final_balance:
         operator: greater_than
         value: 0
+
 
   exchange_diff_day_same_price_full_redeem:
     description: "Diff-day same-price exchange with full redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
-      earn_count:
-        operator: equal
-        value: 0
       day_context_same_flag:
         operator: equal
         value: 0
       exchange_price_direction:
         operator: equal
-        value: same
+        value: EQUAL
       final_balance:
-        operator: any
+        operator: equal
+        value: 0
+
 
   exchange_diff_day_higher_price_partial_redeem:
     description: "Diff-day higher-price exchange with partial redemption."
-    requires:
-      support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
-        operator: greater_than_or_equal
-        value: 1
-      earn_count:
         operator: greater_than_or_equal
         value: 1
       day_context_same_flag:
@@ -1428,72 +1652,125 @@ scenarios:
         value: 0
       exchange_price_direction:
         operator: equal
-        value: higher
+        value: HIGHER
       final_balance:
         operator: greater_than
         value: 0
+
 
   exchange_diff_day_higher_price_full_redeem:
     description: "Diff-day higher-price exchange with full redemption."
     requires:
       support_void: false
     conditions:
+      root_purchase_count:
+        operator: greater_than_or_equal
+        value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: equal
+        value: 0
       redeem_count:
         operator: greater_than_or_equal
         value: 1
-      earn_count:
-        operator: equal
-        value: 0
       day_context_same_flag:
         operator: equal
         value: 0
       exchange_price_direction:
         operator: equal
-        value: higher
+        value: HIGHER
       final_balance:
-        operator: any
+        operator: equal
+        value: 0
 
   void_of_exchange_lower:
     description: "Void event reversing a lower-price exchange path."
     requires:
       support_void: true
     conditions:
-      void_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: any
       exchange_price_direction:
         operator: equal
-        value: lower
+        value: LOWER
       final_balance:
         operator: any
 
   void_of_exchange_higher:
     description: "Void event reversing a higher-price exchange path."
-    requires:
-      support_void: true
     conditions:
-      void_count:
+      root_purchase_count:
         operator: greater_than_or_equal
         value: 1
+      reposting_count:
+        operator: greater_than_or_equal
+        value: 1
+      return_count:
+        operator: equal
+        value: 0
       exchange_count:
         operator: greater_than_or_equal
         value: 1
+      void_purchase_count:
+        operator: equal
+        value: 0
+      void_return_count:
+        operator: equal
+        value: 0
+      void_exchange_count:
+        operator: greater_than_or_equal
+        value: 1
+      redeem_count:
+        operator: equal
+        value: 0
+      day_context_same_flag:
+        operator: any
       exchange_price_direction:
         operator: equal
-        value: higher
+        value: HIGHER
       final_balance:
         operator: any
 
   ctp_preauth_gas_only:
     description: "CTP pre-auth gas only pattern."
-    requires:
-      support_void: true
     conditions:
       banner:
         operator: equal

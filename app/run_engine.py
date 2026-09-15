@@ -1,4 +1,5 @@
 from pathlib import Path
+from pyspark import StorageLevel
 
 from app.util.spark.core import get_spark_session2
 from app.util.logger import LogMixin
@@ -6,8 +7,10 @@ from app.pyspark.step0_yaml_loader import load_yaml
 from app.pyspark.step1_build_base_df import build_base_df
 from app.pyspark.step2_normalized_df import build_normalized_df
 from app.pyspark.step3_recursive_graph_expansion import build_recursive_graph_expansion_df
+from app.pyspark.common.family_event_builder import build_family_event_df
 from app.pyspark.step4_lifecycle_builder import build_family_summary_df
 from app.pyspark.step5_scenario_classifier import ScenarioClassifier
+from app.pyspark.step6_final_table_builder import build_final_table_df
 from app.pyspark.step6_save_output import save_output
 
 logger = LogMixin().logger
@@ -39,18 +42,31 @@ def run_engine(spark):
 
     logger.info("Performing recursive graph expansion...")
     dynamic_expansion_df = build_recursive_graph_expansion_df(normalized_df=normalized_df)
+
+    logger.info("Building shared family event dataframe...")
+    family_event_df = build_family_event_df(
+        normalized_df=normalized_df,
+        dynamic_expansion_df=dynamic_expansion_df,
+    ).persist(StorageLevel.MEMORY_AND_DISK)
     
     logger.info("Building family summary dataframe...")
-    family_summary_df = build_family_summary_df(dynamic_expansion_df=dynamic_expansion_df, 
-                                                normalized_df=normalized_df)
+    family_summary_df = build_family_summary_df(family_event_df=family_event_df)
     
     logger.info("Classifying scenarios...")
     scenario_classifier = ScenarioClassifier(spark=spark, 
                                              summary_df=family_summary_df,
                                              scenarios_yaml=scenarios_yaml, 
                                              banner_yaml=banner_yaml)
-    scenario_df = scenario_classifier.classify_scenarios()
+    scenario_df = scenario_classifier.classify_scenarios(runtime_parameters["banner"])
     scenario_df.show(10, truncate=False)
+
+    logger.info("Building final table dataframe...")
+    final_table_df = build_final_table_df(
+        classified_summary_df=scenario_df,
+        family_event_df=family_event_df,
+    )
+    final_table_df.show(10, truncate=False)
+    family_event_df.unpersist()
 
     # logger.info("Saving output...")
     # save_output(scenario_df, runtime_parameters.get("output_path"))

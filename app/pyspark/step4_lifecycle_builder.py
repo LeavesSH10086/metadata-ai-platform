@@ -1,23 +1,12 @@
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, countDistinct, max as spark_max, substring, sum as spark_sum, trim, upper, when
+from pyspark.sql.functions import col, countDistinct, max as spark_max, sum as spark_sum, when
 
 
-def build_family_summary_df(normalized_df: DataFrame,
-                            dynamic_expansion_df: DataFrame,
-                        ) -> DataFrame:
-    # Do not hard-code scenario transaction numbers here.
-    event_df = normalized_df.select(trim(col("cardnumber")).alias("cardnumber"),
-                                    trim(col("transnumber")).alias("transnumber"),
-                                    trim(col("original_transaction_num")).alias("original_transaction_num"),
-                                    upper(trim(col("normalized_event"))).alias("normalized_event"),
-                                    col("loyaltycurrency"),
-                                    substring(col("pointdate"), 1, 10).alias("event_date")
-                                )
-
+def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
     # One transaction can have several normalized rows. Record whether
     # each possible parent transaction contains RETURN or EXCHANGE.
     parent_type_df = (
-                        event_df.groupBy("cardnumber", "transnumber")
+                        family_event_df.groupBy("cardnumber", "transnumber")
                         .agg(spark_max(when(col("normalized_event") == "RETURN", 1).otherwise(0)).alias("parent_is_return"),
                             spark_max(when(col("normalized_event") == "EXCHANGE", 1).otherwise(0)).alias("parent_is_exchange")
                             )
@@ -32,12 +21,13 @@ def build_family_summary_df(normalized_df: DataFrame,
     # original_transaction_num. This also supports self-references:
     # VOID transnumber=0076, original_transaction_num=0076, where another
     # row for 0076 is RETURN.
-    classified_event_df = (event_df.alias("event").join(parent_type_df.alias("parent"),
+    classified_event_df = (family_event_df.alias("event").join(parent_type_df.alias("parent"),
                                                         (col("event.cardnumber") == col("parent.parent_cardnumber"))
                                                         & (col("event.original_transaction_num") == col("parent.parent_transnumber")),
                                                         "left"
                                                     )
                                                 .select(col("event.cardnumber").alias("cardnumber"),
+                                                    col("event.root_purchase_transnumber").alias("root_purchase_transnumber"),
                                                         col("event.transnumber").alias("transnumber"),
                                                         col("event.loyaltycurrency").alias("loyaltycurrency"),
                                                         col("event.event_date").alias("event_date"),
@@ -56,16 +46,7 @@ def build_family_summary_df(normalized_df: DataFrame,
                                                     )
                         )
 
-    family_mapping_df = (dynamic_expansion_df.select(trim(col("cardnumber")).alias("cardnumber"),
-                                                     trim(col("root_purchase_transnumber")).alias("root_purchase_transnumber"),
-                                                     trim(col("transnumber")).alias("transnumber"),
-                                                ).distinct()
-                    )
-
-    family_df = classified_event_df.join(family_mapping_df,
-                                        on=["cardnumber", "transnumber"],
-                                        how="inner",
-                                    )
+    family_df = classified_event_df
 
     root_purchase_date_df = (family_df.filter((col("transnumber") == col("root_purchase_transnumber"))
                                                  & (col("effective_event") == "PURCHASE")
@@ -156,25 +137,14 @@ def build_family_summary_df(normalized_df: DataFrame,
 
 
 
-    family_members_df = (dynamic_expansion_df.select(trim(col("cardnumber")).alias("member_cardnumber"),
-                                                    trim(col("root_purchase_transnumber")).alias("member_root_transnumber"),
-                                                    trim(col("transnumber")).alias("member_transnumber")
-                                                    ).distinct()
-                    )
-
-
-    exchange_family_events_df = (exchange_families_df.alias("summary").join(family_members_df.alias("family"),
-                                                                            (col("summary.cardnumber") == col("family.member_cardnumber"))
-                                                                            & (col("summary.root_purchase_transnumber")== col("family.member_root_transnumber")),
-                                                                            how="inner")
-                                                                      .join(normalized_df.alias("event"),
-                                                                            (col("family.member_cardnumber") == trim(col("event.cardnumber")))
-                                                                            & (col("family.member_transnumber") == trim(col("event.transnumber"))),
-                                                                            how="inner")
+    exchange_family_events_df = (exchange_families_df.alias("summary").join(family_event_df.alias("event"),
+                                                        (col("summary.cardnumber") == col("event.cardnumber"))
+                                                        & (col("summary.root_purchase_transnumber") == col("event.root_purchase_transnumber")),
+                                                        how="inner")
                                                                     .select(col("summary.cardnumber").alias("cardnumber"),
                                                                             col("summary.root_purchase_transnumber").alias("root_purchase_transnumber"),
-                                                                            col("family.member_transnumber").alias("transnumber"),
-                                                                            upper(trim(col("event.normalized_event"))).alias("normalized_event"),
+                                                        col("event.transnumber").alias("transnumber"),
+                                                        col("event.normalized_event").alias("normalized_event"),
                                                                             col("event.loyaltycurrency").alias("loyaltycurrency"))
                             )
 
@@ -204,4 +174,5 @@ def build_family_summary_df(normalized_df: DataFrame,
                                                      ))
     family_summary_final_df.show(50, truncate=False)
 
+        
     return family_summary_final_df

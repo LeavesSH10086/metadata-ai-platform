@@ -1,4 +1,4 @@
-from pyspark.sql import Row
+from pyspark.sql import Row, col
 
 """
 This module classifies transactions into scenarios based on a set of conditions defined in a YAML configuration.
@@ -29,42 +29,66 @@ class ScenarioClassifier:
         
         return False
 
-    def capability_supported(self, banner, scenario_config, banner_yaml):
-        required_capabilities = scenario_config.get('requires', {})
-        banner_capability = banner_yaml.get(banner, {})
-        for capability, required in required_capabilities.items():
-            actual_value = banner_capability.get(capability, False)
-            if required != actual_value:
-                return False
-        return True
+    def get_scenarios_for_banner(self, banner):
+        banner_exclusive = {"SEF", "SRF", "HOC", "BM", "FGLF", "CTP"}
+        applicable_scenarios = {}
+        for scenario_name, scenario_config in self.scenarios.items():
+            normalized_name = scenario_name.lower()
+
+            if banner != "CTP" and normalized_name.startswith("ctp_"):
+                continue
+            if banner in banner_exclusive and "void" in normalized_name:
+                continue
+            applicable_scenarios[scenario_name] = scenario_config
+
+        return applicable_scenarios
 
     def match_scenario(self, row_dict, scenario_config):
-        conditions = scenario_config['conditions']
-        for metric, rules in conditions.items():
-            row_value = row_dict[metric]
-            for operator, target in rules.items():
-                if not self.evaluate_condition(row_value, operator, target):
-                    return False
+        for metric, rule in scenario_config.get("conditions", {}).items():
+            if metric not in row_dict:
+                return False
+
+            operator = rule.get("operator")
+            target = rule.get("value")
+            if not self.evaluate_condition(row_dict[metric], operator, target):
+                return False
+
         return True
 
-    def classify_row(self, row_dict):
-        banner = row_dict.get('banner')
-        for scenario_name, scenario_config in self.scenarios.items():
-            if not self.capability_supported(banner, scenario_config, self.banner_yaml):
-                continue
+    def classify_row(self, row_dict, banner):
+        applicable_scenarios = self.get_scenarios_for_banner(banner)
+        for scenario_name, scenario_config in applicable_scenarios.items():
             if self.match_scenario(row_dict, scenario_config):
                 return scenario_name
+
         return None
 
-    def classify_scenarios(self):
+    def classify_scenarios(self, banner):
         classified_rows = []
         for row in self.summary_df.collect():
-            scenario = self.classify_row(row_dict = row.asDict()) # Collecting the row as a dictionary for easier access to column values
+            row_dict = row.asDict()
+            scenario_name = self.classify_row(row_dict, banner)
+            if scenario_name:
+                classified_rows.append(
+                    Row(
+                        cardnumber=row_dict["cardnumber"],
+                        root_purchase_transnumber=row_dict[
+                            "root_purchase_transnumber"
+                        ],
+                        scenario_name=scenario_name,
+                    )
+                )
 
-            if scenario:
-                output = row.asDict()
-                output['scenario_name'] = scenario
-                classified_rows.append(Row(**output)
-                                    )
+        if not classified_rows:
+            return self.summary_df.withColumn("scenario_name", col("cardnumber").cast("string"))
 
-        return self.spark.createDataFrame(classified_rows)
+        classified_df = self.spark.createDataFrame(classified_rows)
+
+        final_summary_with_scenario_df = self.summary_df.join(classified_df,
+                                                              on=["cardnumber", "root_purchase_transnumber"],
+                                                              how="left"
+                                                              )
+        return final_summary_with_scenario_df
+
+
+
