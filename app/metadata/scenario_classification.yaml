@@ -1188,7 +1188,7 @@ scenarios:
         value: 0
       day_context_same_flag:
         operator: equal
-        value: 1
+        value: 0
       exchange_price_comparison:
         operator: equal
         value: HIGHER
@@ -1225,7 +1225,7 @@ scenarios:
         value: 1
       day_context_same_flag:
         operator: equal
-        value: 0
+        value: 1
       exchange_price_comparison:
         operator: equal
         value: LOWER
@@ -1337,7 +1337,7 @@ scenarios:
         value: 1
       day_context_same_flag:
         operator: equal
-        value: 0
+        value: 1
       exchange_price_comparison:
         operator: equal
         value: HIGHER
