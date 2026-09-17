@@ -51,11 +51,6 @@ def build_recursive_graph_expansion_df(
     # Step 2 resolves the two raw relationship fields into one canonical
     # predecessor. Using it avoids doubling the edge table and avoids paths
     # that disagree with the normalization precedence rule.
-    root_transaction_df = root_purchase_df.select(
-        "cardnumber",
-        col("transnumber").alias("child_transnumber"),
-    )
-
     edges_df = (
         normalized_df.select(
             trim(col("cardnumber")).alias("cardnumber"),
@@ -69,11 +64,6 @@ def build_recursive_graph_expansion_df(
             & (col("parent_transnumber") != col("child_transnumber"))
         )
         .distinct()
-        .join(
-            root_transaction_df,
-            on=["cardnumber", "child_transnumber"],
-            how="left_anti",
-        )
         .persist(StorageLevel.MEMORY_AND_DISK)
     )
 
