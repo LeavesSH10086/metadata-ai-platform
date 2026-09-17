@@ -1081,7 +1081,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 1
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:
@@ -1117,7 +1117,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: LOWER
       final_balance:
@@ -1153,7 +1153,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: EQUAL
       final_balance:
@@ -1189,7 +1189,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 1
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:
@@ -1226,7 +1226,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: LOWER
       final_balance:
@@ -1263,7 +1263,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 1
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: LOWER
       final_balance:
@@ -1300,7 +1300,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 1
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:
@@ -1338,7 +1338,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:
@@ -1376,7 +1376,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: LOWER
       final_balance:
@@ -1414,7 +1414,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: LOWER
       final_balance:
@@ -1451,7 +1451,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: EQUAL
       final_balance:
@@ -1489,7 +1489,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: EQUAL
       final_balance:
@@ -1527,7 +1527,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:
@@ -1567,7 +1567,7 @@ scenarios:
       day_context_same_flag:
         operator: equal
         value: 0
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:
@@ -1605,7 +1605,7 @@ scenarios:
         value: 0
       day_context_same_flag:
         operator: any
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: LOWER
       final_balance:
@@ -1640,7 +1640,7 @@ scenarios:
         value: 0
       day_context_same_flag:
         operator: any
-      exchange_price_direction:
+      exchange_price_comparison:
         operator: equal
         value: HIGHER
       final_balance:

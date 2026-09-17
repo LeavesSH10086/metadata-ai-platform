@@ -8,12 +8,14 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
     parent_type_df = (
                         family_event_df.groupBy("cardnumber", "transnumber")
                         .agg(spark_max(when(col("normalized_event") == "RETURN", 1).otherwise(0)).alias("parent_is_return"),
-                            spark_max(when(col("normalized_event") == "EXCHANGE", 1).otherwise(0)).alias("parent_is_exchange")
+                            spark_max(when(col("normalized_event") == "EXCHANGE", 1).otherwise(0)).alias("parent_is_exchange"),
+                            spark_max(when((col("normalized_event") == "VOID")&(col("transnumber") == col("original_transaction_num")), 1).otherwise(0)).alias("parent_is_purchase")
                             )
                         .select(col("cardnumber").alias("parent_cardnumber"),
                                 col("transnumber").alias("parent_transnumber"),
                                 "parent_is_return",
                                 "parent_is_exchange",
+                                "parent_is_purchase"
                             )
                     )
 
@@ -40,6 +42,11 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                             (col("event.normalized_event") == "VOID")
                                                             & (col("parent.parent_is_exchange") == 1),
                                                             "VOID_EXCHANGE",
+                                                        )
+                                                        .when(
+                                                            (col("event.normalized_event") == "VOID")
+                                                            & (col("parent.parent_is_purchase") == 1),
+                                                            "VOID_PURCHASE",
                                                         )
                                                         .otherwise(col("event.normalized_event"))
                                                         .alias("effective_event"),
