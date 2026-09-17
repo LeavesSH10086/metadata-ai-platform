@@ -171,7 +171,7 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                      on=["cardnumber", "root_purchase_transnumber"],
                                                      how="left"
                                                      ))
-    family_summary_final_df.show(50, truncate=False)
+    # family_summary_final_df.show(50, truncate=False)
 
         
     return family_summary_final_df

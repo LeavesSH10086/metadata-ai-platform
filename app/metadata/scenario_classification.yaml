@@ -368,72 +368,6 @@ scenarios:
         operator: greater_than
         value: 0
 
-  exchange_no_redemption:
-    description: "Exchange transaction family with no redemption observed."
-    conditions:
-      root_purchase_count:
-        operator: greater_than_or_equal
-        value: 1
-      reposting_count:
-        operator: greater_than_or_equal
-        value: 1
-      return_count:
-        operator: equal
-        value: 0
-      exchange_count:
-        operator: greater_than_or_equal
-        value: 1
-      void_purchase_count:
-        operator: equal
-        value: 0
-      void_return_count:
-        operator: equal
-        value: 0
-      void_exchange_count:
-        operator: equal
-        value: 0
-      redeem_count:
-        operator: equal
-        value: 0
-      day_context_same_flag:
-        operator: any
-      final_balance:
-        operator: greater_than
-        value: 0
-
-  exchange_with_redeem:
-    description: "Exchange transaction family with redemption activity."
-    conditions:
-      root_purchase_count:
-        operator: greater_than_or_equal
-        value: 1
-      reposting_count:
-        operator: greater_than_or_equal
-        value: 1
-      return_count:
-        operator: equal
-        value: 0
-      exchange_count:
-        operator: greater_than_or_equal
-        value: 1
-      void_purchase_count:
-        operator: equal
-        value: 0
-      void_return_count:
-        operator: equal
-        value: 0
-      void_exchange_count:
-        operator: equal
-        value: 0
-      redeem_count:
-        operator: greater_than_or_equal
-        value: 1
-      day_context_same_flag:
-        operator: any
-      final_balance:
-        operator: greater_than
-        value: 0
-
   purchase:
     description: "Alias scenario for pure purchase without correction activity."
     conditions:
@@ -885,8 +819,8 @@ scenarios:
         operator: equal
         value: 0
       return_count:
-        operator: greater_than_or_equal
-        value: 1
+        operator: equal
+        value: 0
       exchange_count:
         operator: equal
         value: 0
