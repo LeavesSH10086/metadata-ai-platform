@@ -5,13 +5,13 @@ from app.util.spark.core import get_spark_session2
 from app.util.logger import LogMixin
 from app.pyspark.step0_yaml_loader import load_yaml
 from app.pyspark.step1_build_base_df import build_base_df
-from app.pyspark.step2_normalized_df import build_normalized_df
+from app.pyspark.step2_build_normalized_df import build_normalized_df
 from app.pyspark.step3_recursive_graph_expansion import build_recursive_graph_expansion_df
 from app.pyspark.common.family_event_builder import build_family_event_df
 from app.pyspark.step4_lifecycle_builder import build_family_summary_df
 from app.pyspark.step5_scenario_classifier import ScenarioClassifier
 from app.pyspark.step6_final_table_builder import build_final_table_df
-from app.pyspark.step6_save_output import save_output
+from app.pyspark.step7_save_output import save_output
 
 logger = LogMixin().logger
 APP_DIR = Path(__file__).resolve().parent
@@ -22,6 +22,7 @@ def run_engine(spark):
     runtime_parameters = load_yaml(APP_DIR/"metadata/runtime_parameters.yaml")
     scenarios_yaml = load_yaml(APP_DIR/"metadata/scenario_classification.yaml")
     banner_yaml = load_yaml(APP_DIR/"metadata/banner_capabilities.yaml")
+    output_schema_yaml = load_yaml(APP_DIR/"metadata/output_schema.yaml")
     logger.info("Runtime parameters: %s", runtime_parameters)
     logger.info("Scenarios YAML: %s", scenarios_yaml)
     logger.info("Banner YAML: %s", banner_yaml)
@@ -44,10 +45,9 @@ def run_engine(spark):
     dynamic_expansion_df = build_recursive_graph_expansion_df(normalized_df=normalized_df)
 
     logger.info("Building shared family event dataframe...")
-    family_event_df = build_family_event_df(
-        normalized_df=normalized_df,
-        dynamic_expansion_df=dynamic_expansion_df,
-    ).persist(StorageLevel.MEMORY_AND_DISK)
+    family_event_df = build_family_event_df(normalized_df=normalized_df,
+                                            dynamic_expansion_df=dynamic_expansion_df
+                                            ).persist(StorageLevel.MEMORY_AND_DISK)
     
     logger.info("Building family summary dataframe...")
     family_summary_df = build_family_summary_df(family_event_df=family_event_df)
@@ -61,15 +61,18 @@ def run_engine(spark):
     scenario_df.show(10, truncate=False)
 
     logger.info("Building final table dataframe...")
-    final_table_df = build_final_table_df(
-        classified_summary_df=scenario_df,
-        family_event_df=family_event_df,
-    )
+    final_table_df = build_final_table_df(classified_summary_df=scenario_df,
+                                          family_event_df=family_event_df)
     final_table_df.show(10, truncate=False)
-    family_event_df.unpersist()
 
-    # logger.info("Saving output...")
-    # save_output(scenario_df, runtime_parameters.get("output_path"))
+    logger.info("Saving output...")
+
+    save_output(output_df=final_table_df,
+                output_path=runtime_parameters["output_path"],
+                output_schema=output_schema_yaml["lifecycle_detection_engine_metadata_output_schema"],
+                output_mode=runtime_parameters.get("output_mode", "append"),
+            )
+    family_event_df.unpersist()
 
 if __name__ == "__main__":
     spark = get_spark_session2("Lifecycle Detection Engine")

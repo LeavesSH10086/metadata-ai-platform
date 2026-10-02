@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, max as spark_max, trim
+from pyspark.sql.functions import col, current_timestamp, max as spark_max, trim
 
 
 def build_final_table_df(classified_summary_df: DataFrame,
@@ -13,7 +13,7 @@ def build_final_table_df(classified_summary_df: DataFrame,
                                             .agg(spark_max("event_date").alias("root_purchase_date"))
                             )
 
-        classified_family_df = (classified_summary_df.select(trim(col("banner")).alias("banner"),
+    classified_family_df = (classified_summary_df.select(trim(col("banner")).alias("banner"),
                                                             trim(col("cardnumber")).alias("cardnumber"),
                                                         trim(col("root_purchase_transnumber")).alias(
                                                             "root_purchase_transnumber"
@@ -37,7 +37,8 @@ def build_final_table_df(classified_summary_df: DataFrame,
                                         "root_purchase_date",
                                         "root_purchase_transnumber",
                                         "event_date",
-                                        "transnumber"
+                                        "transnumber",
+                                        current_timestamp().alias("pipelne_operation_ts"),
                                 )
                                 .distinct()
                         )
