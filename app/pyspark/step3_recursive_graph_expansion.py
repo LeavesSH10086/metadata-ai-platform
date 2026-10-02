@@ -37,9 +37,10 @@ def build_recursive_graph_expansion_df(
                                             & (col("transnumber") == col("originating_transnumber"))
                                         )
                                         .select(
-                                            "cardnumber",
+                                            col("cardnumber"),
                                             col("transnumber").alias("root_purchase_transnumber"),
                                             col("transnumber"),
+                                            col("banner")
                                         )
                                         .filter(
                                             col("cardnumber").isNotNull()
@@ -53,7 +54,8 @@ def build_recursive_graph_expansion_df(
     # that disagree with the normalization precedence rule.
     edges_df = (
         normalized_df.select(
-            trim(col("cardnumber")).alias("cardnumber"),
+            trim(col("banner")),
+            trim(col("cardnumber")),
             trim(col("predecessor_transnumber")).alias("parent_transnumber"),
             trim(col("transnumber")).alias("child_transnumber"),
         )
@@ -88,6 +90,7 @@ def build_recursive_graph_expansion_df(
                                                             "inner",
                                                         )
                                                     .select(
+                                                        col("edge.banner").alias("banner"),
                                                         col("edge.cardnumber").alias("cardnumber"),
                                                         col("frontier.root_purchase_transnumber"),
                                                         col("edge.child_transnumber").alias("transnumber"),
@@ -129,6 +132,10 @@ def build_recursive_graph_expansion_df(
         )
         updated_count = updated_visited_df.count()
 
+        # Retain the current cached DataFrames before advancing the traversal
+        # state, then unpersist them once their replacements are assigned.
+        # On the first iteration, visited and frontier reference the same
+        # DataFrame, so avoid unpersisting that shared cache twice.
         old_visited_df = visited_df
         old_frontier_df = frontier_df
 

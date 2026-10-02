@@ -1,5 +1,5 @@
 from pyspark.sql import Row
-from pyspark.sql.functions import col
+from pyspark.sql.functions import lit
 
 """
 This module classifies transactions into scenarios based on a set of conditions defined in a YAML configuration.
@@ -62,32 +62,32 @@ class ScenarioClassifier:
             if self.match_scenario(row_dict, scenario_config):
                 return scenario_name
 
-        return None
+        return "unclassified"
 
     def classify_scenarios(self, banner):
         classified_rows = []
         for row in self.summary_df.collect():
             row_dict = row.asDict()
             scenario_name = self.classify_row(row_dict, banner)
-            if scenario_name:
-                classified_rows.append(
-                    Row(
-                        cardnumber=row_dict["cardnumber"],
-                        root_purchase_transnumber=row_dict[
-                            "root_purchase_transnumber"
-                        ],
-                        scenario_name=scenario_name,
-                    )
+            classified_rows.append(
+                Row(
+                    banner=row_dict["banner"],
+                    cardnumber=row_dict["cardnumber"],
+                    root_purchase_transnumber=row_dict[
+                        "root_purchase_transnumber"
+                    ],
+                    scenario_name=scenario_name,
                 )
+            )
 
         if not classified_rows:
-            return self.summary_df.withColumn("scenario_name", col("cardnumber").cast("string"))
+            return self.summary_df.withColumn("scenario_name", lit("unclassified"))
 
         classified_df = self.spark.createDataFrame(classified_rows)
 
         final_summary_with_scenario_df = self.summary_df.join(classified_df,
-                                                              on=["cardnumber", "root_purchase_transnumber"],
-                                                              how="left"
+                                                              on=["banner", "cardnumber", "root_purchase_transnumber"],
+                                                              how="inner"
                                                               )
         return final_summary_with_scenario_df
 

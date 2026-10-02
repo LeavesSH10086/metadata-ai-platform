@@ -6,7 +6,8 @@ def build_family_event_df(
     normalized_df: DataFrame,
     dynamic_expansion_df: DataFrame,
 ) -> DataFrame:
-    event_df = normalized_df.select(trim(col("cardnumber")).alias("cardnumber"),
+    event_df = normalized_df.select(trim(col("banner")).alias("banner"),
+                                    trim(col("cardnumber")).alias("cardnumber"),
                                     trim(col("transnumber")).alias("transnumber"),
                                     trim(col("original_transaction_num")).alias(
                                         "original_transaction_num"
@@ -16,7 +17,7 @@ def build_family_event_df(
                                     substring(col("pointdate"), 1, 10).alias("event_date"),
                                 )
 
-    family_mapping_df = (dynamic_expansion_df.select(
+    family_mapping_df = (dynamic_expansion_df.select(trim(col("banner")).alias("banner"),
                                                     trim(col("cardnumber")).alias("cardnumber"),
                                                     trim(col("root_purchase_transnumber")).alias(
                                                         "root_purchase_transnumber"
@@ -26,16 +27,18 @@ def build_family_event_df(
                                                 .distinct()
                                             )
 
-    mapping_count_df = family_mapping_df.groupBy("cardnumber", "transnumber").agg(
-        countDistinct("root_purchase_transnumber").alias("family_mapping_count")
-    )
+    mapping_count_df = (family_mapping_df.groupBy("banner", "cardnumber", "transnumber")
+                                         .agg(countDistinct("root_purchase_transnumber").alias("family_mapping_count")
+                                              )
+                        )
 
     direct_root_df = family_mapping_df.filter(
-        col("root_purchase_transnumber") == col("transnumber")
-    ).select(
-        "cardnumber",
-        col("root_purchase_transnumber").alias("direct_root_transnumber"),
-    ).distinct()
+                                            col("root_purchase_transnumber") == col("transnumber")
+                                        ).select(
+                                            "banner",
+                                            "cardnumber",
+                                            col("root_purchase_transnumber").alias("direct_root_transnumber")
+                                        ).distinct()
 
     event_df = (event_df.withColumn(
                             "owner_transnumber",
@@ -53,7 +56,8 @@ def build_family_event_df(
                         .alias("event")
                         .join(
                             direct_root_df.alias("root"),
-                            (col("event.cardnumber") == col("root.cardnumber"))
+                            (col("event.banner") == col("root.banner"))
+                            & (col("event.cardnumber") == col("root.cardnumber"))
                             & (
                                 col("event.owner_transnumber")
                                 == col("root.direct_root_transnumber")
@@ -68,11 +72,11 @@ def build_family_event_df(
 
     family_event_df = (event_df.join(
                                     family_mapping_df,
-                                    on=["cardnumber", "transnumber"],
+                                    on=["banner", "cardnumber", "transnumber"],
                                     how="inner")
                                .join(
                                    mapping_count_df,
-                                   on=["cardnumber", "transnumber"],
+                                   on=["banner", "cardnumber", "transnumber"],
                                    how="inner",
                                )
                                .filter(

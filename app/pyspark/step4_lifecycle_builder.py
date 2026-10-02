@@ -6,13 +6,14 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
     # One transaction can have several normalized rows. Record whether
     # each possible parent transaction contains RETURN or EXCHANGE.
     parent_type_df = (
-                        family_event_df.groupBy("cardnumber", "transnumber")
+                        family_event_df.groupBy("cardnumber", "transnumber", "banner")
                         .agg(spark_max(when(col("normalized_event") == "RETURN", 1).otherwise(0)).alias("parent_is_return"),
                             spark_max(when(col("normalized_event") == "EXCHANGE", 1).otherwise(0)).alias("parent_is_exchange"),
                             spark_max(when((col("normalized_event") == "VOID")&(col("transnumber") == col("original_transaction_num")), 1).otherwise(0)).alias("parent_is_purchase")
                             )
                         .select(col("cardnumber").alias("parent_cardnumber"),
                                 col("transnumber").alias("parent_transnumber"),
+                                col("banner").alias("parent_banner"),
                                 "parent_is_return",
                                 "parent_is_exchange",
                                 "parent_is_purchase"
@@ -25,11 +26,13 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
     # row for 0076 is RETURN.
     classified_event_df = (family_event_df.alias("event").join(parent_type_df.alias("parent"),
                                                         (col("event.cardnumber") == col("parent.parent_cardnumber"))
-                                                        & (col("event.original_transaction_num") == col("parent.parent_transnumber")),
+                                                        & (col("event.original_transaction_num") == col("parent.parent_transnumber"))
+                                                        & (col("event.banner") == col("parent.parent_banner")),
                                                         "left"
                                                     )
-                                                .select(col("event.cardnumber").alias("cardnumber"),
-                                                    col("event.root_purchase_transnumber").alias("root_purchase_transnumber"),
+                                                .select(col("event.banner").alias("banner"),
+                                                        col("event.cardnumber").alias("cardnumber"),
+                                                        col("event.root_purchase_transnumber").alias("root_purchase_transnumber"),
                                                         col("event.transnumber").alias("transnumber"),
                                                         col("event.loyaltycurrency").alias("loyaltycurrency"),
                                                         col("event.event_date").alias("event_date"),
@@ -58,17 +61,18 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
     root_purchase_date_df = (family_df.filter((col("transnumber") == col("root_purchase_transnumber"))
                                                  & (col("effective_event") == "PURCHASE")
                                                  )
-                                    .groupBy("cardnumber", "root_purchase_transnumber")
+                                    .groupBy("banner", "cardnumber", "root_purchase_transnumber")
                                     .agg(spark_max("event_date").alias("root_purchase_date"))
                             )
 
     family_with_root_date_df = family_df.join(root_purchase_date_df,
-                                              on=["cardnumber", "root_purchase_transnumber"],
+                                              on=["banner", "cardnumber", "root_purchase_transnumber"],
                                               how="left",
                                             )
 
-    family_summary_df =  family_with_root_date_df.groupBy("cardnumber", 
-                                                          "root_purchase_transnumber"
+    family_summary_df =  family_with_root_date_df.groupBy("banner", "cardnumber", 
+                                                          "root_purchase_transnumber",
+                                                          "root_purchase_date"
                                                     ).agg(
                                                         countDistinct(
                                                                         when(
@@ -139,7 +143,7 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                     )
     
     exchange_families_df = (family_summary_df.filter(col("exchange_count") > 0)
-                                             .select("cardnumber", "root_purchase_transnumber").distinct())
+                                             .select("banner","cardnumber", "root_purchase_transnumber").distinct())
 
 
 
@@ -147,14 +151,15 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                         (col("summary.cardnumber") == col("event.cardnumber"))
                                                         & (col("summary.root_purchase_transnumber") == col("event.root_purchase_transnumber")),
                                                         how="inner")
-                                                                    .select(col("summary.cardnumber").alias("cardnumber"),
-                                                                            col("summary.root_purchase_transnumber").alias("root_purchase_transnumber"),
-                                                        col("event.transnumber").alias("transnumber"),
-                                                        col("event.normalized_event").alias("normalized_event"),
-                                                                            col("event.loyaltycurrency").alias("loyaltycurrency"))
+                                                    .select(col("summary.banner").alias("banner"),
+                                                            col("summary.cardnumber").alias("cardnumber"),
+                                                            col("summary.root_purchase_transnumber").alias("root_purchase_transnumber"),
+                                                            col("event.transnumber").alias("transnumber"),
+                                                            col("event.normalized_event").alias("normalized_event"),
+                                                            col("event.loyaltycurrency").alias("loyaltycurrency"))
                             )
 
-    exchange_price_comparison_df = (exchange_family_events_df.groupBy("cardnumber", "root_purchase_transnumber")
+    exchange_price_comparison_df = (exchange_family_events_df.groupBy("banner", "cardnumber", "root_purchase_transnumber")
                                                          .agg(spark_sum(when(
                                                                             (col("transnumber") == col("root_purchase_transnumber"))
                                                                             & (col("normalized_event") == "PURCHASE"),
@@ -175,7 +180,7 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                             )
 
     family_summary_final_df = (family_summary_df.join(exchange_price_comparison_df,
-                                                     on=["cardnumber", "root_purchase_transnumber"],
+                                                     on=["banner", "cardnumber", "root_purchase_transnumber"],
                                                      how="left"
                                                      ))
     # family_summary_final_df.show(50, truncate=False)
