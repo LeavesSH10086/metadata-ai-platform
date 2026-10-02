@@ -37,10 +37,10 @@ def build_recursive_graph_expansion_df(
                                             & (col("transnumber") == col("originating_transnumber"))
                                         )
                                         .select(
-                                            col("cardnumber"),
-                                            col("transnumber").alias("root_purchase_transnumber"),
-                                            col("transnumber"),
-                                            col("banner")
+                                            trim(col("banner")).alias("banner"),
+                                            trim(col("cardnumber")).alias("cardnumber"),
+                                            trim(col("transnumber")).alias("root_purchase_transnumber"),
+                                            trim(col("transnumber")).alias("transnumber"),
                                         )
                                         .filter(
                                             col("cardnumber").isNotNull()
@@ -54,8 +54,8 @@ def build_recursive_graph_expansion_df(
     # that disagree with the normalization precedence rule.
     edges_df = (
         normalized_df.select(
-            trim(col("banner")),
-            trim(col("cardnumber")),
+            trim(col("banner")).alias("banner"),
+            trim(col("cardnumber")).alias("cardnumber"),
             trim(col("predecessor_transnumber")).alias("parent_transnumber"),
             trim(col("transnumber")).alias("child_transnumber"),
         )
@@ -82,7 +82,8 @@ def build_recursive_graph_expansion_df(
         # root purchase assigned to each path.
         candidate_df = (frontier_df.alias("frontier").join(
                                                             edges_df.alias("edge"),
-                                                            (col("frontier.cardnumber") == col("edge.cardnumber"))
+                                                            (col("frontier.banner") == col("edge.banner"))
+                                                            & (col("frontier.cardnumber") == col("edge.cardnumber"))
                                                             & (
                                                                 col("frontier.transnumber")
                                                                 == col("edge.parent_transnumber")
@@ -103,6 +104,7 @@ def build_recursive_graph_expansion_df(
         next_frontier_df = (candidate_df.join(
                                                 visited_df,
                                                 on=[
+                                                    "banner",
                                                     "cardnumber",
                                                     "root_purchase_transnumber",
                                                     "transnumber",
@@ -153,8 +155,7 @@ def build_recursive_graph_expansion_df(
     frontier_df.unpersist()
     visited_df.unpersist()
 
-    raise RuntimeError(
-        "Recursive graph expansion exceeded "
-        f"{max_iterations} iterations. Check transaction relationships "
-        "for unexpectedly long or highly connected families."
-    )
+    raise RuntimeError("Recursive graph expansion exceeded "
+                       f"{max_iterations} iterations. Check transaction relationships "
+                       "for unexpectedly long or highly connected families."
+                    )
