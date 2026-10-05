@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
@@ -5,7 +7,7 @@ from pyspark.sql.functions import col
 def save_output(
                 output_df: DataFrame,
                 output_path: str,
-                output_schema: list[dict],
+                output_schema: List[Dict[str, Any]],
                 output_mode: str = "append",
             ) -> None:
     if not output_path:
