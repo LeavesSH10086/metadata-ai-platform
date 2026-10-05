@@ -105,7 +105,8 @@ The current output includes:
 5. `root_purchase_transnumber`
 6. `event_date`
 7. `transnumber`
-8. `pipelne_operation_ts`
+8. `transaction_type`
+9. `pipelne_operation_ts`
 
 `pipelne_operation_ts` is the existing contract spelling and must remain
 consistent across Steps 6 and 7 unless a coordinated schema migration renames

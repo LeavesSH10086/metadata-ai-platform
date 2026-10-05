@@ -27,6 +27,7 @@ def build_final_table_df(classified_summary_df: DataFrame,
                                         "root_purchase_transnumber",
                                         "event_date",
                                         "transnumber",
+                                        col("normalized_event").alias("transaction_type"),
                                         current_timestamp().alias("pipelne_operation_ts"),
                                 )
                                 .distinct()
