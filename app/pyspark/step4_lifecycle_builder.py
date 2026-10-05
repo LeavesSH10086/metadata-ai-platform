@@ -3,6 +3,21 @@ from pyspark.sql.functions import col, countDistinct, max as spark_max, sum as s
 
 
 def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
+    """Aggregate transaction-family events into lifecycle classification metrics.
+
+    The builder resolves VOID event types from their referenced transactions,
+    calculates event counts and balances for each purchase family, and adds
+    exchange price comparison fields when the family contains an exchange.
+
+    Args:
+        family_event_df: Event-level family data containing banner, card,
+            transaction, event type, date, and loyalty currency fields.
+
+    Returns:
+        One row per banner, card, and root purchase with lifecycle counts,
+        balance metrics, root purchase date, and exchange price details.
+    """
+
     # One transaction can have several normalized rows. Record whether
     # each possible parent transaction contains RETURN or EXCHANGE.
     parent_type_df = (
@@ -56,8 +71,12 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                     )
                         )
 
+    # Use the classified event rows as the event-level source for all family
+    # aggregates below.
     family_df = classified_event_df
 
+    # Capture the purchase date for each root transaction so later events can
+    # be compared with the family's originating purchase date.
     root_purchase_date_df = (family_df.filter((col("transnumber") == col("root_purchase_transnumber"))
                                                  & (col("effective_event") == "PURCHASE")
                                                  )
@@ -65,11 +84,14 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                     .agg(spark_max("event_date").alias("root_purchase_date"))
                             )
 
+        # Attach the root purchase date to every classified event in its family.
     family_with_root_date_df = family_df.join(root_purchase_date_df,
                                               on=["banner", "cardnumber", "root_purchase_transnumber"],
                                               how="left",
                                             )
 
+        # Produce one summary row per family with distinct event counts, same-day
+        # context, and the resulting loyalty currency balance.
     family_summary_df =  family_with_root_date_df.groupBy("banner", "cardnumber", 
                                                           "root_purchase_transnumber",
                                                           "root_purchase_date"
@@ -141,12 +163,14 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
 
                                                         spark_sum("loyaltycurrency").alias("final_balance"),
                                     )
-    
+
+    # Identify family keys that need exchange-specific price calculations.
     exchange_families_df = (family_summary_df.filter(col("exchange_count") > 0)
                                              .select("banner","cardnumber", "root_purchase_transnumber").distinct())
 
 
-
+    # Restrict the event-level input to transactions belonging to exchange
+    # families and retain only fields needed for price comparison.
     exchange_family_events_df = (exchange_families_df.alias("summary").join(family_event_df.alias("event"),
                                                         (col("summary.cardnumber") == col("event.cardnumber"))
                                                         & (col("summary.root_purchase_transnumber") == col("event.root_purchase_transnumber")),
@@ -159,6 +183,8 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                             col("event.loyaltycurrency").alias("loyaltycurrency"))
                             )
 
+    # Compare reposted loyalty currency with the original purchase amount and
+    # label the exchange as LOWER, HIGHER, or EQUAL in value.
     exchange_price_comparison_df = (exchange_family_events_df.groupBy("banner", "cardnumber", "root_purchase_transnumber")
                                                          .agg(spark_sum(when(
                                                                             (col("transnumber") == col("root_purchase_transnumber"))
@@ -179,6 +205,8 @@ def build_family_summary_df(family_event_df: DataFrame) -> DataFrame:
                                                                     )
                                                             )
 
+    # Add optional exchange price metrics to the common lifecycle summary;
+    # non-exchange families retain null exchange-specific columns.
     family_summary_final_df = (family_summary_df.join(exchange_price_comparison_df,
                                                      on=["banner", "cardnumber", "root_purchase_transnumber"],
                                                      how="left"

@@ -62,6 +62,10 @@ class ScenarioClassifier:
             if self.match_scenario(row_dict, scenario_config):
                 return scenario_name
 
+        # A family can remain valid without matching a configured scenario.
+        # This includes transaction patterns absent from the YAML rules,
+        # incomplete family history outside the extraction window, and other
+        # combinations that do not satisfy the current conditions.
         return "unclassified"
 
     def classify_scenarios(self, banner):
@@ -80,6 +84,8 @@ class ScenarioClassifier:
                 )
             )
 
+        # This branch represents an empty summary input. Unmatched families in
+        # a non-empty input are already labeled "unclassified" above.
         if not classified_rows:
             return self.summary_df.withColumn("scenario_name", lit("unclassified"))
 
