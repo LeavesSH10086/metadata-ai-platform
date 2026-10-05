@@ -19,13 +19,14 @@ APP_DIR = Path(__file__).resolve().parent
 def run_engine(spark):
 
     logger.info("Loading runtime parameters and scenarios...")
-    runtime_parameters = load_yaml(APP_DIR/"metadata/runtime_parameters.yaml")
-    scenarios_yaml = load_yaml(APP_DIR/"metadata/scenario_classification.yaml")
-    banner_yaml = load_yaml(APP_DIR/"metadata/banner_capabilities.yaml")
-    output_schema_yaml = load_yaml(APP_DIR/"metadata/output_schema.yaml")
+    runtime_parameters = load_yaml(APP_DIR / "metadata/runtime_parameters.yaml")
+    scenarios_yaml = load_yaml(APP_DIR / "metadata/scenario_classification.yaml")
+    banner_yaml = load_yaml(APP_DIR / "metadata/banner_capabilities.yaml")
+    output_schema = load_yaml(APP_DIR / "metadata/output_schema.yaml")
     logger.info("Runtime parameters: %s", runtime_parameters)
     logger.info("Scenarios YAML: %s", scenarios_yaml)
     logger.info("Banner YAML: %s", banner_yaml)
+    logger.info("Output schema: %s", output_schema)
 
     logger.info("Building base dataframe...")
     # the source of base_df is lms_point_detail. Several filters are applied to decrease the processing time.
@@ -69,7 +70,7 @@ def run_engine(spark):
 
     save_output(output_df=final_table_df,
                 output_path=runtime_parameters["output_path"],
-                output_schema=output_schema_yaml["lifecycle_detection_engine_metadata_output_schema"],
+                output_schema=output_schema["lifecycle_detection_engine_metadata_output_schema"],
                 output_mode=runtime_parameters.get("output_mode", "append"),
             )
     family_event_df.unpersist()
